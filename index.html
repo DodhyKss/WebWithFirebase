@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Data</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <div class="title_container">
+            <h1>Weather Data</h1>
+            <div id="weather_data_api">
+
+            </div>
+            <div id="weather_data_firebase">
+                <p id="temp"></p>
+                <p id="hum"></p>
+                <p id="status"></p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <a href=""><p>Go to BOT</p></a>
+    </footer>
+
+
+
+    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+    
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWMe2mORCVw-3AjpcfcKWFW1h1BRKLgDg",
+            authDomain: "curahhujan-be104.firebaseapp.com",
+            projectId: "curahhujan-be104",
+            storageBucket: "curahhujan-be104.appspot.com",
+            messagingSenderId: "518169113075",
+            appId: "1:518169113075:web:94c344cd48945340452286"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        function getData() {
+            const temperature = document.getElementById("temp");
+            const humidity = document.getElementById("hum");
+            const status = document.getElementById("status");
+
+
+            const dataRef = ref(database, "weather_data");
+            onValue(dataRef, (snapshot) => {
+                const weatherData = snapshot.val();
+                temperature.innerText = `Temperature: ${weatherData.suhu}°C`;
+                humidity.innerText =`Humidity: ${weatherData.kelembaban}%`;
+                status.innerText =`Status: ${weatherData.status}`;
+            });
+        }
+
+        // Call getData() when the page loads
+        document.addEventListener("DOMContentLoaded", getData);
+
+        window.onload = function() {
+        const apiKey = '43dd03f41055fb674d81425bff0de0b1';
+        const city = 'Makassar';
+        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const weatherData = document.getElementById('weather_data_api');
+                weatherData.innerHTML = `
+                    <p>City: ${data.name}</p>
+                    <p>Description: ${data.weather[0].description}</p>
+                    <p>Pressure: ${data.main.pressure} hPa</p>
+                `;
+                if (data.rain && data.rain['1h']) {
+                    weatherData.innerHTML += `<p>Rain (last hour): ${data.rain['1h']} mm</p>`;
+                } else {
+                    weatherData.innerHTML += `<p>Rain (last hour): Tidak ada hujan</p>`;
+                }
+                if (data.wind) {
+                    weatherData.innerHTML += `<p>Wind Speed: ${data.wind.speed} m/s</p>`;
+                } else {
+                    weatherData.innerHTML += `<p>Wind Speed: No data available</p>`;
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    };
+        
+    </script>
+</body>
+</html>
